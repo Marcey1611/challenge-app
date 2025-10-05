@@ -5,9 +5,8 @@ import {
   ensureStepDoc, subscribeStepDoc, toggleCheckpoint,
   setExtraSteps, setTarget, resetWeek,
   type StepChallenge, computeBalance, computeCompleted
-} from '@/services/stepChallenges'   // ⟵ singular!
+} from '@/services/stepChallenges'
 
-// PrimeVue (on-demand)
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
@@ -34,25 +33,22 @@ const completed = computed(() =>
 const balance = computed(() =>
   state.data ? computeBalance(state.data) : 0
 )
-const remaining = computed(() =>
-  state.data ? Math.max(0, state.data.target - completed.value) : 0
-)
-/**const over = computed(() =>
-  state.data ? Math.max(0, completed.value - state.data.target) : 0
-)**/
 
 async function onToggle(i: number) {
   if (!auth.user || !state.data) return
   await toggleCheckpoint(auth.user.uid, i, state.data)
 }
+
 async function onExtraChange(val: number | null) {
   if (!auth.user) return
   await setExtraSteps(auth.user.uid, val ?? 0)
 }
+
 async function onTargetChange(val: number | null) {
   if (!auth.user) return
   await setTarget(auth.user.uid, val ?? 0)
 }
+
 async function onReset() {
   if (!auth.user || !state.data) return
   state.saving = true
@@ -65,36 +61,36 @@ async function onReset() {
   <Card class="shadow-2">
     <template #title>Weekly Step Challenge</template>
     <template #content>
-      <div v-if="!state.data">lade …</div>
+      <div v-if="!state.data">loading …</div>
 
       <div v-else class="grid">
-        <!-- Status -->
         <div class="col-12 md:col-6 lg:col-4">
           <div class="p-3 border-round surface-100">
             <div class="mb-2">
-              <strong>Erledigt:</strong>
+              <strong>Steps this Week:</strong>
               <Tag :value="completed.toLocaleString()" severity="success" class="ml-2" />
             </div>
             <div class="mb-2">
-              <strong>Balance (±):</strong>
+              <strong>Week Balance:</strong>
               <Tag
                 :value="balance.toLocaleString()"
                 :severity="balance >= 0 ? 'success' : 'danger'"
                 class="ml-2"
               />
             </div>
-            <div class="mb-2">
-              <strong>Rest:</strong> {{ remaining.toLocaleString() }}
-            </div>
             <div>
-              <strong>Überziel:</strong> {{ state.data.carryOver}}
+              <strong>Balance total:</strong>
+              <Tag
+                :value="state.data.carryOver.toLocaleString()"
+                :severity="state.data.carryOver >= 0 ? 'success' : 'danger'"
+                class="ml-2"
+              />
             </div>
           </div>
         </div>
 
-        <!-- Extra & Ziel -->
         <div class="col-12 md:col-3">
-          <label class="block mb-2">Zusatz-Steps</label>
+          <label class="block mb-2">EXtra Steps</label>
           <InputNumber
             class="w-full"
             :useGrouping="true"
@@ -105,7 +101,7 @@ async function onReset() {
           />
         </div>
         <div class="col-12 md:col-3">
-          <label class="block mb-2">Wochenziel</label>
+          <label class="block mb-2">Change Week Goal</label>
           <InputNumber
             class="w-full"
             :useGrouping="true"
@@ -118,7 +114,6 @@ async function onReset() {
 
         <div class="col-12"><Divider /></div>
 
-        <!-- 10 Buttons à 10k: grün (aktiv) / grau (inaktiv) -->
         <div class="col-12">
           <div class="grid">
             <div
@@ -141,7 +136,6 @@ async function onReset() {
 
         <div class="col-12"><Divider /></div>
 
-        <!-- Reset -->
         <div class="col-12 flex align-items-center gap-3">
           <Button
             severity="danger"
@@ -151,7 +145,7 @@ async function onReset() {
             @click="onReset"
           />
           <small class="text-500">
-            Letzter Reset:
+            Last Reset:
             {{ state.data.lastResetAt?.toDate?.() ? state.data.lastResetAt.toDate().toLocaleString() : '—' }}
           </small>
         </div>
